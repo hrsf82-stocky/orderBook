@@ -1,8 +1,13 @@
 const Sequelize = require('sequelize');
 const elasticsearch = require('elasticsearch');
-const { orderSchema, pairSchema } = require('./schemas');
+const { orderSchema, pairSchema, positionSchema } = require('./schemas');
 const { POSTGRES: { USER, PASSWORD, HOST }} = require('../../config');
 const { generateFakeData } = require('./methods');
+const { gte, lte } = Sequelize.Op;
+
+//instrument, time, bid, ask, bid_vol, ask_vol
+//bid/ask vol are the total of all new orders w/in that time period plus the total of all resolved orders w/in that time period
+//in other words, vol movements
 
 const sequelize = new Sequelize('orderBook', USER, PASSWORD, {
   host: HOST,
@@ -26,11 +31,7 @@ const Buy = sequelize.define('buy', orderSchema, {
   indexes: [ // A BTREE index with a ordered field
     {
       method: 'BTREE',
-      fields: ['price']
-    },
-    {
-      method: 'BTREE',
-      fields: ['createdAt']
+      fields: ['price', 'createdAt']
     }
   ]
 });
@@ -38,15 +39,19 @@ const Sell = sequelize.define('sell', orderSchema, {
   indexes: [ // A BTREE index with a ordered field
     {
       method: 'BTREE',
-      fields: ['price']
-    },
-    {
-      method: 'BTREE',
-      fields: ['createdAt']
+      fields: ['price', 'createdAt']
     }
   ]
 });
 const Pair = sequelize.define('pair', pairSchema);
+const Position = sequelize.define('position', positionSchema, {
+  indexes: [
+    {
+      method: 'BTREE',
+      fields: ['userId']
+    },
+  ]
+});
 
 Pair
   .sync()
@@ -60,12 +65,41 @@ Sell.belongsTo(Pair, { as: 'pair' });
 Pair.hasMany(Sell);
 
 //TEST CORE QUERY:
-const sortBuys = () => {
+const topBuys = () => {
   console.log('starting sort');
-  Buy
+  return Buy
     .max('price')
-    .then(max => Buy.findAll({ where: { price: max }, order: [[sequelize.col('createdAt'), 'ASC']]}))
+    .then(max => Buy.findAll({
+      limit: 10,
+      where: { price: max }, 
+      order: [[sequelize.col('price'), 'DESC'], [sequelize.col('createdAt'), 'ASC']]
+    }))
     .then(results => console.log('ORDERED: ', results.length, results[0], results[results.length - 1]));
+};
+
+const topSells = () => {
+  console.log('starting sort');
+  return Sell
+    .min('price')
+    .then(min => Sell.findAll({
+      limit: 10,
+      where: { price: min }, 
+      order: [[sequelize.col('price'), 'ASC'], [sequelize.col('createdAt'), 'ASC']]
+    }))
+    .then(results => console.log('ORDERED: ', results.length, results[0], results[results.length - 1]));
+};
+
+const match = ({ payload: { userId, orderType, vol, price }}) => {
+  if (orderType === 'BID') {
+    Sell
+      .min('createdAt', { where: { price: { [lte]: price }}})
+      .then(res => console.log('MATCHED: ', res));
+  }
+  if (orderType === 'ASK') {
+    Buy
+      .max('createdAt', { where: { price: { [gte]: price }}})
+      .then(res => console.log(res));
+  }
 };
 
 // let fakeData = generateFakeData(1000);
@@ -73,15 +107,24 @@ const sortBuys = () => {
 Buy
   .sync()
   // .then(() => Buy.bulkCreate(fakeData.bids))
-  .then(() => Buy.count())
-  .then(results => console.log('BUYS: ', results))
-  .then(() => sortBuys());
+  // .then(() => Buy.count())
+  // .then(results => console.log('BUYS: ', results))
+  .then(() => console.log('startSort'))
+  .then(() => topBuys());
+  // .then(() => Buy.max('price'))
+  // .then(result => console.log('max: ', result));
 
 Sell
   .sync()
+  .then(() => console.log('startSort'))
+  .then(() => topSells());
+  // .then(() => match({ payload: { orderType: 'BID', userId: 2, price: 1.0725, vol: 1}}));
+  // .then(() => Sell.min('price'))
+  // .then(result => Sell.findAll({ limit: 10, where: { price: result }, order: [[sequelize.col('createdAt'), 'ASC']]}))
+  // .then(results => console.log(results));
   // .then(() => Sell.bulkCreate(fakeData.asks))
-  .then(() => Sell.count())
-  .then(results => console.log('SELLS: ', results));
+  // .then(() => Sell.count())
+  // .then(results => console.log('SELLS: ', results));
 
 
 

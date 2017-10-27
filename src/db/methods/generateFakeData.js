@@ -5,12 +5,10 @@ const PD = require('probability-distributions');
  
  * @param {int} quantity Every 1 quantity = 1000 data points
  */
-module.exports = quantity => {
+module.exports = (quantity, initialPrice = 1 + (Math.random() * 0.4)) => {
   let results = [];
   let bids = [];
   let asks = [];
-  //for EURUSD, pick a random start point between $1.00 and $1.40 (a plausible range)
-  let initialPrice = 1 + (Math.random() * 0.4);
 
   for (let i = 0; i < quantity; i++) {
     //generate 1000 data points
