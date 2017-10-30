@@ -5,6 +5,7 @@ module.exports = {
     type: INTEGER,
     allowNull: false,
     primaryKey: true,
+    unique: true,
   },
   // LONG/SHORT
   type: {
