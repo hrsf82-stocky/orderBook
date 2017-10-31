@@ -14,7 +14,9 @@ const { Buy, Sell, resolveOrder } = require('../db');
 // let fakeData = generateFakeData(1000);
 
 Buy
-  .sync();
+  .sync()
+  // .then(() => Buy.min('price'))
+  // .then(res => console.log(res));
 // .then(() => Buy.bulkCreate(fakeData.bids))
 // .then(() => Buy.count())
 // .then(results => console.log('BUYS: ', results))
