@@ -127,7 +127,9 @@ const openPosition = ({userId, price, volume, type}) => {
 
 // Modify an existing position
 const updatePosition = ({ userId, price, volume, type }) => {
+  console.log('type: ', type);
   type = (type === 'BUY') ? 'long' : 'short';
+  console.log('type: ', type);
   // find position by userId
   Position.findById(userId)
     .then(result => {
@@ -170,7 +172,8 @@ const updatePosition = ({ userId, price, volume, type }) => {
             } else {
               profit += (order.price - price) * (volume - vol);
               vol += order.volume;
-              order.unshift({ price: order.price, volume: (volume - vol)});
+              // console.log(order);
+              orders.unshift({ price: order.price, volume: (volume - vol)});
             }
           } else {
             if (vol + order.volume <= volume) {
@@ -179,7 +182,7 @@ const updatePosition = ({ userId, price, volume, type }) => {
             } else {
               profit += (price - order.price) * (volume - vol);
               vol += order.volume;
-              order.unshift({ price: order.price, volume: (volume - vol)});
+              orders.unshift({ price: order.price, volume: (volume - vol)});
             }
           }
         }
@@ -191,9 +194,9 @@ const updatePosition = ({ userId, price, volume, type }) => {
           }, { priceSum: 0, volSum: 0 });
           result.update({
             price: (newInfo.priceSum / orders.length),
-            volume: (newInfo.volume / orders.length),
+            volume: (newInfo.volSum / orders.length),
             orders: [...orders],
-          });
+          }).then(res => console.log(res));
         } else {
           // result.destroy();
         }
@@ -221,7 +224,7 @@ const resolvePosition = ({userId, price, volume}, type) => {
   // if not, close the position
 };
 
-resolvePosition({ userId: 2, price: 1.0725, volume: 1 }, 'BUY');
+// resolvePosition({ userId: 2, price: 1.0725, volume: 1 }, 'SELL');
 
 // Close an open position
 const closePosition = () => {
@@ -288,7 +291,7 @@ const processOrder = ({ type, order }) => {
   }
 };
 
-processOrder({type: 'SELL', order: { price: 1.01, volume: 1, userId: 1, }});
+// processOrder({type: 'SELL', order: { price: 1.01, volume: 1, userId: 1, }});
 
 // Handle an incoming order
 const resolveOrder = ({ id, type }, { vol }) => {
