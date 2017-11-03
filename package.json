@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/speckospock/orderBook#readme",
   "dependencies": {
+    "aws-sdk": "^2.142.0",
     "elasticsearch": "^13.3.1",
     "express": "^4.16.2",
     "node": "^8.3.0",
@@ -26,7 +27,8 @@
     "pg-hstore": "^2.3.2",
     "probability-distributions": "^0.9.1",
     "redis": "^2.8.0",
-    "sequelize": "^4.17.2"
+    "sequelize": "^4.17.2",
+    "sqs-consumer": "^3.8.0"
   },
   "devDependencies": {
     "babel-preset-env": "^1.6.1",

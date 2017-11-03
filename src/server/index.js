@@ -1,9 +1,43 @@
 process.env.NODE_ENV = 'development';
 
-const { Buy, Sell, Pair, topBuys, topSells } = require('../db');
+const AWS = require('aws-sdk');
+const { Buy, Sell, Pair, topBuys, topSells, processOrder } = require('../db');
 const { generateFakeData } = require('../db/methods');
 
+const sqsUrls = {
+  ordersRequest: 'https://sqs.us-west-2.amazonaws.com/179737091880/ordersrequest.fifo',
+};
+
 //TODO: setup connection to SQS
+// Load credentials and set the region from the JSON file
+AWS.config.loadFromPath('./config.json');
+
+const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
+
+const Consumer = require('sqs-consumer');
+
+// processOrder({order: { userId: 123456789, volume: 1, price: 1.2209 }, type: 'BUY'});
+
+const app = Consumer.create({
+  queueUrl: sqsUrls.ordersRequest,
+  batchSize: 5,
+  handleMessage: (message, done) => {
+    console.log(message);
+    //JSON parse the order
+    let theOrder = JSON.parse(message.Body);
+    //convert price to float
+    theOrder.order.price = parseFloat(theOrder.order.price);
+    processOrder(theOrder);
+    done();
+  }
+});
+
+app.on('error', (err) => {
+  console.log(err.message);
+});
+
+app.start();
+
 //TODO: handle incoming orders
 //TODO: form outgoing profit messages
 
