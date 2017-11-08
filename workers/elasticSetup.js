@@ -1,5 +1,4 @@
 const elasticsearch = require('elasticsearch');
-const generateFakeData = require('./generateFakeData');
 
 const elasticClient = new elasticsearch.Client({
   host: 'localhost:9200',
@@ -17,7 +16,11 @@ elasticClient.ping({
   }
 });
 
-//create 'orders' index
+module.exports = {
+  elasticClient
+};
+
+// create 'orders' index
 // elasticClient.indices
 //   .create({ index: 'orders' })
 //   .then((err, res, status) => {
@@ -29,25 +32,25 @@ elasticClient.ping({
 //   });
 
 //generate random orders
-let fakeData = generateFakeData(1, 1.0729);
+// let fakeData = generateFakeData(1, 1.0729);
 
-console.time('insert');
-fakeData.bids.forEach(order => {
-  elasticClient.index({
-    type: 'bid',
-    index: 'orders',
-    body: order,
-  });
-});
+// console.time('insert');
+// fakeData.bids.forEach(order => {
+//   elasticClient.index({
+//     type: 'bid',
+//     index: 'orders',
+//     body: order,
+//   });
+// });
 
-fakeData.asks.forEach(order => {
-  elasticClient.index({
-    type: 'ask',
-    index: 'orders',
-    body: order,
-  });
-});
-console.timeEnd('insert');
+// fakeData.asks.forEach(order => {
+//   elasticClient.index({
+//     type: 'ask',
+//     index: 'orders',
+//     body: order,
+//   });
+// });
+// console.timeEnd('insert');
 
 // Create 'positions' index
 // elasticClient.indices

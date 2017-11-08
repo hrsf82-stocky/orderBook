@@ -5,6 +5,9 @@ dist
 config.js
 config.json
 
+# docker
+Dockerfile
+
 #MACOS
 .DS_Store
 src/.DS_Store

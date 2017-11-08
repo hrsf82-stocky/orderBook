@@ -1,4 +1,10 @@
-module.exports = {
-  generateFakeData: require('./generateFakeData'),
-  topBuys: require('./topBuys.js'),
-};
+export { generateFakeData } from './generateFakeData';
+export { topBuys } from './topBuys';
+export { topSells } from './topSells';
+export { openPosition } from './openPosition';
+export { updatePosition } from './updatePosition';
+export { resolvePosition } from './resolvePosition';
+export { closeOrder } from './closeOrder';
+export { processOrder } from './processOrder';
+export { clearDB } from './clearDB';
+export { updatePrice } from './updatePrice';

@@ -1,6 +1,6 @@
 process.env.NODE_ENV = 'test';
 const { expect } = require('chai');
-const { generateFakeData } = require('../src/db/methods');
+import { generateFakeData } from '../src/db/methods';
 
 describe('generateFakeData', function() {
   let num = 100;

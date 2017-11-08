@@ -1,18 +1,43 @@
 process.env.NODE_ENV = 'development';
 
 const AWS = require('aws-sdk');
-const { Buy, Sell, Pair, topBuys, topSells, processOrder } = require('../db');
-const { generateFakeData } = require('../db/methods');
+// const { Buy, Sell, Pair, Position } = require('../db');
+import { topBuys, topSells, processOrder, generateFakeData, updatePrice } from '../db/methods';
+import { Buy, Sell, Pair, Position } from '../db';
 
-const sqsUrls = {
+// let { bids, asks } = generateFakeData(1, 1.2);
+// Buy.bulkCreate(bids);
+// Sell.bulkCreate(asks);
+// Pair.create({name: 'EURUSD'});
+
+// console.log('from Server: ', Sell);
+// topBuys(console.log);
+
+// processOrder({order: {userId: 1, volume: 1, price: 0.2}, type: 'BUY'});
+
+//to 
+// {payload: {instrument, time, bid, ask, bid_vol, ask_vol}}
+// time: ISO string of time object
+// new Date().toISOString();
+// bid_vol, ask_vol are vol of fulfilled transactions since last price update
+
+// updatePrice();
+
+// let { bids, asks } = generateFakeData(10, 1.2);
+// Buy.bulkCreate(bids).then(res => console.log(res));
+// Sell.bulkCreate(asks).then(res => console.log(res));
+
+export const sqsUrls = {
   ordersRequest: 'https://sqs.us-west-2.amazonaws.com/179737091880/ordersrequest.fifo',
+  fulfilledorders: 'https://sqs.us-west-1.amazonaws.com/858778373274/FulfilledOrderQueue',
+  priceQueue: 'https://sqs.us-west-1.amazonaws.com/287396276472/SQS_PRICES_QUEUE'
 };
 
 //TODO: setup connection to SQS
 // Load credentials and set the region from the JSON file
 AWS.config.loadFromPath('./config.json');
 
-const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
+export const sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
 
 const Consumer = require('sqs-consumer');
 
@@ -51,8 +76,8 @@ app.start();
 // let fakeData = generateFakeData(1000, 1.2);
 // console.timeEnd('fakeData');
 
-Buy
-  .sync()
+// Buy
+//   .sync()
   // .then(() => Buy.min('price'))
   // .then(res => console.log(res));
   // .then(() => {
@@ -77,8 +102,8 @@ Buy
 // .then(() => Buy.max('price'))
 // .then(result => console.log('max: ', result));
 
-Sell
-  .sync()
+// Sell
+//   .sync()
   // .then(() => resolveOrder({ id: 2516623, type: 'SELL' }, { vol: 220 }));
 // .then(() => console.log('startSort'))
   // .then(() => {
